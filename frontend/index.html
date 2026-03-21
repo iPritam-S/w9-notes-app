@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotesApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <link rel="stylesheet" href="/style.css">
+
+
+</head>
+<body>
+
+    <div id="container">
+
+        <nav>
+            <div class="nav-left">
+                <h4>Notes App</h4>
+            </div>
+
+            <div id="usernameHeading">
+
+            </div>
+
+            <div class="nav-right">
+                <a href="/signup"><button>Sign up</button></a>
+                <a href="/signin"><button>Log in</button></a>
+            </div>
+        </nav>
+
+    <!-- LEFT: Black Theme -->
+
+
+     
+    <div class="left">
+
+
+        <h1>Write your Notes Here</h1>
+        
+        <div id="customAlert" ></div>
+
+            
+
+        <div id="noteSection">
+
+            <textarea id="notes" placeholder="Write your note..."></textarea>
+
+            <div class="actions">
+                <button onclick="createNote()">Create</button>
+                <button onclick="clearNotes()">Clear</button>
+                <button onclick="getAllNotes()">See All</button>
+            </div>  
+        </div>
+        <h2>Recent Notes</h2>
+        <div id="recentnotes"></div>
+        <div id="loading">Loading Notes...</div>
+        
+    </div>
+
+    <!-- RIGHT: White Theme -->
+    <div class="right">
+        <h2>All Notes</h2>
+        <div id="viewallNotes"></div>
+        <!-- <button onclick="clearAllNotes()">Clear the page</button> -->
+    </div>
+
+
+
+</div>
+
+
+    <script>
+        console.log("control reached here")
+        setTimeout(() => {
+            document.getElementById("loading").innerHTML = ""
+        }, 3000);
+
+        //get the name
+        const name = localStorage.getItem("name");
+        const usernamediv = document.getElementById("usernameHeading")
+        usernamediv.innerHTML = name;
+        usernamediv.setAttribute("style", "font-family: monospace; color: cyan");
+
+        console.log("control reached here")
+
+        //if we got the name in the local storage means logged in;
+        // we don't need to show login and signup
+        if (name) {
+            document.querySelector(".nav-right").innerHTML = ""
+            document.querySelector(".nav-right").innerHTML = "<a><button id='logout-btn'>Log out</button></a>"
+        };
+
+        document.addEventListener('click', function (e) {
+            if (e.target.id === "logout-btn") {
+                logout();
+            }
+        });
+        
+
+        function logout(){
+            showAlert("Logging you out..")
+            setTimeout(() => {
+                localStorage.removeItem("name")
+                localStorage.removeItem("auth")
+                // window.location = "/signin"
+                location.reload()
+            }, 2000); 
+        };
+
+        
+
+
+        async function createNote() {
+            let userNote = document.getElementById("notes").value;
+
+            const token = localStorage.getItem("auth")
+
+
+            if (!token || token == "null"){
+                showAlert("Please log in")
+                return
+            }
+
+            if (userNote === "") {return}
+            try {
+
+                // const res = await fetch("http://localhost:3000/createnotes", {
+                //     method: "POST",
+                //     headers: {
+                //         "Content-Type": "application/json",
+                //         "Authorization": `Bearer ${token}`
+                //     },
+                //     body: JSON.stringify({
+                //         note: userNote
+                //     })
+                // });
+
+                // const data = await res.json();
+
+
+
+                const res = await axios.post(
+                "http://localhost:3000/createnotes",
+                { note: userNote },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+                );
+                showAlert("note sent");
+
+                const newNote = document.createElement("div");
+
+                newNote.innerHTML = document.getElementById("notes").value;
+                // newNote.setAttribute('id', 'newNotes');
+                newNote.className = "newNotes"
+                newNote.setAttribute("style", "min-width: 70%; min-height: 100px")
+                console.log("Control reached in appedning child")
+                document.getElementById("recentnotes").appendChild(newNote);
+                showAlert(res.data.message);
+
+            } catch (err){
+                showAlert(`Some error occurred while creating note ${err}`);
+                return
+            }
+            
+
+            //show the new note
+            
+
+            //make the input box empty
+            document.getElementById("notes").value = "";
+            
+        }
+
+
+        async function getAllNotes() {
+
+            const token = localStorage.getItem("auth")
+
+
+            if (!token || token == "null"){
+                showAlert("Please log in")
+                return
+            }
+
+            try {
+
+                const res = await axios({
+                url: "http://localhost:3000/getnotes",
+                method: "get",
+                headers: {
+                    token: localStorage.getItem("auth")
+                }
+            });
+                const notes = res.data.notes;
+                console.log(notes)
+                if (notes.length === 0) {showAlert("No notes found"); return}
+                const elm = document.getElementById("viewallNotes");
+                elm.innerHTML = ""
+
+                for (let i = 0; i < notes.length; i++) {
+                    const div = document.createElement("div");
+                    div.innerHTML = notes[i].note;
+                    div.setAttribute('id', 'note('+ i +')');
+                    div.setAttribute("style", "min-height: 70px; min-width: 90%; border-radius: 10px; background-color: black; color: white; padding: 10px; box-shadow: 5px 10px 8px #888888;");
+                    elm.appendChild(div);
+                }
+
+                const clearButton = document.createElement("button")
+                clearButton.setAttribute("onclick", "clearAllNotes()");
+                clearButton.innerHTML = "Clear all notes"
+                elm.appendChild(clearButton);
+
+            } catch(err) {
+                showAlert(`Some error occurred: ${err}`)
+            }
+            
+        };
+
+
+
+
+        function clearNotes() {
+            document.getElementById("recentnotes").innerHTML = "";
+        }
+
+          function showAlert(message) {
+                const box = document.getElementById("customAlert");
+                box.innerText = message;
+                box.style.display = "block";
+
+                setTimeout(() => {
+                    box.style.display = "none";
+                }, 3000);
+          }
+
+        const clearAllNotes = () => {
+            document.getElementById("viewallNotes").innerHTML = ""
+        }
+
+
+
+        
+    </script>
+</body>
+</html>

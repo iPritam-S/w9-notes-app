@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signin</title>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #fff;
+        color: #000;
+        font-family: Arial, sans-serif;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding: 30px;
+        border: 1px solid #000;
+        border-radius: 10px;
+        width: 300px;
+    }
+
+    input {
+        padding: 10px;
+        background: #fff;
+        border: 1px solid #000;
+        color: #000;
+        border-radius: 5px;
+        outline: none; /* removes default blue border */
+        transition: border 0.2s ease;
+    }
+
+    input::placeholder {
+        color: #666;
+    }
+
+    /* Custom focus effect */
+    input:focus {
+        border: 2px solid #000;
+    }
+
+    button {
+        padding: 10px;
+        background: #000;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    button:hover {
+        background: #333;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Signin</h2>
+
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="signin()">Login</button>
+    <button onclick="gotosignup()">New here? Create an account</button>
+</div>
+
+<script>
+    function gotosignup(){
+        setTimeout(() => {
+            window.location = "/signup"
+        }, 1000);
+    }
+async function signin() {
+
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    if (!username || !password) {
+        alert("All fields required");
+        return;
+    }
+
+    try {
+        const res = await axios.post("/signin", {
+            username,
+            password
+        });
+
+        alert(res.data.message + res.data.name);
+        const token = res.data.token; // get the token
+        localStorage.setItem("auth", token); //dump it to the localstorage
+        localStorage.setItem("name", res.data.name); //dump it to the localstorage
+
+        window.location = '/'   //redirect to first page
+
+    } catch (err) {
+        alert(err.response?.data?.message || "Error");
+    }
+}
+</script>
+
+</body>
+</html>

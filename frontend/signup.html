@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup page</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #000;
+        color: #fff;
+        font-family: Arial, sans-serif;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding: 30px;
+        border: 1px solid #fff;
+        border-radius: 10px;
+        width: 300px;
+    }
+
+    input {
+        padding: 10px;
+        background: #000;
+        border: 1px solid #fff;
+        color: #fff;
+        border-radius: 5px;
+    }
+
+    input::placeholder {
+        color: #aaa;
+    }
+    input:focus {
+        border: 2px solid #000;
+    }
+
+    button {
+        padding: 10px;
+        background: #fff;
+        color: #000;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    button:hover {
+        background: #ddd;
+    }
+    #signin-btn {
+        display: flex;
+        justify-content: center;
+    }
+
+    a{
+        color: #aaa;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 200;
+        text-decoration: none;
+    }
+    a:hover{
+        text-decoration: underline white;
+        color: #ddd;
+        font-weight: 300;
+    }
+
+    #customAlert2{
+    display:none;
+    position:fixed;
+    top:5%;
+    right:5%;
+    background: rgb(247, 40, 40);
+    color:white;
+    padding:15px 20px;
+    border-radius:5px;
+    font-family:Arial;
+    box-shadow: 0px 0px 10px red;
+}
+    #customAlert1{
+    display:none;
+    position:fixed;
+    top:20px;
+    right:20px;
+    background: rgb(2, 69, 9);
+    color:white;
+    padding:15px 20px;
+    border-radius:5px;
+    font-family:Arial;
+    box-shadow: 0px 0px 10px rgb(32, 248, 61);
+}
+
+    
+
+</style>
+
+
+</head>
+<body>
+    
+
+<div class="container">
+    <h2>Signup</h2>
+
+    <input type="text" id="name" placeholder="Name">
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="signup()">Create Account</button>
+    <div id="signin-btn">
+
+    </div>
+</div>
+
+<div id="customAlert1" >
+</div>
+<div id="customAlert2" >
+</div>
+
+
+<script>
+    async function signup() {
+        const name = document.getElementById("name").value;
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        if (!name || !username || !password) {
+            showAlert2("All fields are required!!");
+            return;
+        }
+
+        document.getElementById("password").value = ""
+        document.getElementById("username").value = ""
+
+
+        //now we will send a post req
+        try{
+            const res = await axios.post("/signup", {
+                //in object if the key and value is of same name we can do short hand
+                name : name,
+                username: username,
+                password: password
+            });
+            showAlert1(res.data.message);
+            
+            setTimeout(() => {
+                window.location = '/signin'
+            }, 3000);
+            
+            // const signin = document.getElementById("signin-btn");
+            // signin.innerHTML = "<a href = '/signin'>Signin</a>";
+        } catch(err) {
+            showAlert2(err.response?.data?.message)
+        }
+
+    }
+
+    function showAlert1(message) {
+    const box = document.getElementById("customAlert1");
+    box.innerText = message;
+    box.style.display = "block";
+
+    setTimeout(() => {
+        box.style.display = "none";
+    }, 3000);
+}
+
+    function showAlert2(message) {
+    const box = document.getElementById("customAlert2");
+    box.innerText = message;
+    box.style.display = "block";
+
+    setTimeout(() => {
+        box.style.display = "none";
+    }, 3000);
+}
+
+</script>
+
+</body>
+</html>
