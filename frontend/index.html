@@ -192,8 +192,8 @@
                 url: "http://localhost:3000/getnotes",
                 method: "get",
                 headers: {
-                    token: localStorage.getItem("auth")
-                }
+                        Authorization: `Bearer ${token}`
+                    }
             });
                 const notes = res.data.notes;
                 console.log(notes)

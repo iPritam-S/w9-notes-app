@@ -6,6 +6,8 @@ const bcrypt = require("bcrypt")
 
 const { randomUUID } = require("crypto");
 
+const { authMiddleware } = require("./middleware");
+
 
 // for loading the css
 
@@ -54,32 +56,6 @@ app.get("/", (req, res) => {
 app.use(express.json());
 app.post("/createnotes", (req, res) => {
     //check if they have sent the right header, extract who the user is
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader) {
-        return res.status(404).send({
-            message: "you are not logged in!"
-        })
-    }
-
-    const token = authHeader.split(" ")[1] //actual token
-
-    if (!token || token == "null") {
-        return res.status(404).send({
-            message: "You are not logged in"
-        })
-    }
-
-
-    const decoded = jwt.verify(token, "secretcode");
-    const username = decoded.username;
-
-    if (!username) {
-        res.status(406).json({
-            message: "Malformed token"
-        })
-        return;
-    }
 
 
 
@@ -99,7 +75,18 @@ app.post("/createnotes", (req, res) => {
 app.get("/getnotes", (req, res) => {
 
     //check the token in headers
-    const token = req.headers.token;
+    // const token = req.headers.token;
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(404).send({
+            message: "you are not logged in!"
+        })
+    }
+
+    const token = authHeader.split(" ")[1] //actual token
+
+    
     if (!token || token == "null") {
         res.status(404).send({
             message: "you are not logged in!"
