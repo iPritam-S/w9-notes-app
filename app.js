@@ -6,42 +6,18 @@ const bcrypt = require("bcrypt")
 
 const { randomUUID } = require("crypto");
 
+require("dotenv").config();
+const JWT_SECRET = process.env.JWT_SECRET;
+
 const { authMiddleware } = require("./middleware");
 
 
-// for loading the css
-
-
-// structures to store data
-// let notes = [];
-// to change the data structure to store the notes as well as the corresponding user
-let NOTES = [
-    {
-        username: 'kirat',
-        note: 'code karooo'
-    },
-    {
-        username: "ipritam",
-        note: "Code code"
-    }
-]
+let NOTES = []; //array of objects {username: username, note: note}
 
 
 /// users
-let USERS = [{
-        id: 1,
-        name: 'Harkirat',
-        username: "kirat",
-        password: "1234"
-    },
-    {
-        id: 2,
-        name: "Pritam",
-        username: "ipritam",
-        password: 123
-    }
-]  
-//array of objects {username: username, password: password}
+let USERS = []; //array of objects {id: id, name: name, username: username, password: password}
+
 
 
 
@@ -54,8 +30,10 @@ app.get("/", (req, res) => {
 
 
 app.use(express.json());
-app.post("/createnotes", (req, res) => {
-    //check if they have sent the right header, extract who the user is
+//authenticated create note
+
+app.post("/createnotes", authMiddleware, (req, res) => {
+
 
     const username = req.username;
 
@@ -71,14 +49,11 @@ app.post("/createnotes", (req, res) => {
 
 
 
-// get all notes
-app.get("/getnotes", (req, res) => {
+// get all notes authenticated
+app.get("/getnotes", authMiddleware, (req, res) => {
 
-    //check the token in headers
-    // const token = req.headers.token;
     const username = req.username;
 
-    //filter the note according to the user
     const usernotes = NOTES.filter((note) => note.username === username)
     res.json({
         notes: usernotes
@@ -95,11 +70,9 @@ app.get("/signup", (req, res) => {
 
 
 app.post("/signup", async (req, res) => {
-    // const username = req.body.username;
-    // const password = req.body.password;
-    // const name = req.body.name
+    
 
-    const { name, username, password } = req.body   //shorthand of the above
+    const { name, username, password } = req.body   
 
     //check username
     const usernameExist = USERS.find(user => user.username === username);
@@ -112,7 +85,7 @@ app.post("/signup", async (req, res) => {
     const passstr = password.toString();
     const hashedPass = await bcrypt.hash(passstr, 10);
 
-    //if it passed add to the users
+
     USERS.push({
         id: USERS.length +1,
         name: name,
@@ -144,7 +117,6 @@ app.post("/signin", async function (req, res) {
     }
 
     //check credentials
-    // const verified = USERS.find(user => user.username === username && user.password === password);
 
     const verified = await bcrypt.compare(password, userExists.password);
 
@@ -154,7 +126,7 @@ app.post("/signin", async function (req, res) {
         })
     };
 
-    //json web token: for now let's assume this as a encryption (Though it's a wrong statement; jwt does something called digital signature)
+
     const token = jwt.sign(
         {
             username: userExists.username,
@@ -162,7 +134,7 @@ app.post("/signin", async function (req, res) {
             // jti: Date.now()
             jti: randomUUID()
         },
-        'secretcode',
+        JWT_SECRET,
 
         {expiresIn: "1h"}
     )
@@ -173,16 +145,10 @@ app.post("/signin", async function (req, res) {
         message: "Welcome Back "
     })
 
-    // res.json({
-    //     message : "you are in ",
-    //     name: verified.name
-    // })
-
     
 
 })
 
-// sign up get back a 200 status code but sign in get back a jwt token
 
 
 
@@ -190,8 +156,5 @@ const server = app.listen(3000, () => {
     console.log("Server running on 3000")
 });
 
-// console.log(server);
-
-
-
+//css
 app.use(express.static(path.join(__dirname, "frontend")));

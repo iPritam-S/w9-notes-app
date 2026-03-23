@@ -1,3 +1,5 @@
+const jwt = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET;
 function authMiddleware(req, res, next) {
     const authHeader = req.headers.authorization;
 
@@ -16,7 +18,7 @@ function authMiddleware(req, res, next) {
     }
 
 
-    const decoded = jwt.verify(token, "secretcode");
+    const decoded = jwt.verify(token, JWT_SECRET); //verify the token
     const username = decoded.username;
 
     if (!username) {
